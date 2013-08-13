@@ -31,7 +31,7 @@ public class Dynamic {
 	 * @return the dynamic value
 	 * @throws Exception if the value copy of the object cannot be returned
 	 */
-	public static Object externalValueOf(Object o) throws Exception {
+	public static <T> T externalValueOf(Object o) throws Exception {
 
 		return externalValueOf(o,defaultDirectives);
 
@@ -46,9 +46,11 @@ public class Dynamic {
 	 * @return the dynamic value
 	 * @throws Exception if the value copy of the object cannot be returned
 	 */
-	public static Object externalValueOf(Object o, ExcludeDirective... directives) throws Exception {
+	public static <T> T externalValueOf(Object o, ExcludeDirective... directives) throws Exception {
 
-		return Type.of(o).toExternal(o,directives);
+		@SuppressWarnings("all")
+		T t = (T) Type.of(o).toExternal(o,directives);
+		return t;
 
 	}
 
@@ -59,12 +61,12 @@ public class Dynamic {
 	 * @return the dynamic value
 	 * @throws Exception if the value copy of the object cannot be returned
 	 */
-	public static Object valueOf(Object o) throws Exception {
+	public static <T> T valueOf(Object o) throws Exception {
 
 		return valueOf(o,defaultDirectives);
 
 	}
-
+	
 	/**
 	 * Returns the value copy of an object based on given copy directives.
 	 * 
@@ -73,9 +75,12 @@ public class Dynamic {
 	 * @return the dynamic value
 	 * @throws Exception if the value copy of the object cannot be returned
 	 */
-	public static Object valueOf(Object o, ExcludeDirective... directives) throws Exception {
+	public static <T> T valueOf(Object o, ExcludeDirective... directives) throws Exception {
 
-		return Type.of(o).toDynamic(o,directives);
+		@SuppressWarnings("all")
+		T t = (T) Type.of(o).toDynamic(o,directives);
+		return t;
 
 	}
+
 }
