@@ -76,12 +76,14 @@ enum Type {
 
 			List<Object> list = new ArrayList<Object>();
 
-			state.put(identityHashCode(o), list);
+			value = new ValueList(list);
+			
+			state.put(identityHashCode(o), value);
 
 			for (Object element : Iterable.class.cast(o))
 				list.add(Dynamic.externalValueOf(element, state, directives));
 
-			return new ValueList(list);
+			return value;
 		}
 
 		@Override
@@ -112,12 +114,12 @@ enum Type {
 
 			List<Object> list = new ArrayList<Object>();
 
+			value = new ValueList(list);
+
 			state.put(identityHashCode(o), value);
 
 			for (int i = 0; i < Array.getLength(o); i++)
 				list.add(Dynamic.externalValueOf(Array.get(o, i), state, directives));
-
-			value = new ValueList(list);
 
 			return value;
 		}

@@ -15,7 +15,8 @@ import javax.xml.bind.annotation.adapters.XmlAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
- * List and Map wrapper types for JAXB bindings.
+ * List and map wrapper types for JAXB bindings of external value copies.
+ * 
  * @author Fabio Simeoni
  *
  */
@@ -24,11 +25,13 @@ class Externals {
 	@XmlRootElement(name="map")
 	public static class ValueMap {
 		
-		ValueMap() {}
+		ValueMap() {
+			elements = new LinkedHashMap<Object, Object>();
+		}
 		
 		@XmlJavaTypeAdapter(MapAdapter.class)
 		@XmlElement(name="entries")
-		Map<Object,Object> elements = new LinkedHashMap<Object, Object>();
+		Map<Object,Object> elements;
 		
 		public ValueMap(Map<Object,Object> elements) {
 			this.elements=elements;
@@ -46,7 +49,9 @@ class Externals {
 	@XmlRootElement(name="list")
 	public static class ValueList implements Iterable<Object> {
 		
-		ValueList(){};
+		ValueList(){
+			elements = new ArrayList<Object>();
+		};
 		
 		@XmlElementWrapper(name="list")
 		@XmlElement(name="element")
@@ -78,7 +83,7 @@ class Externals {
 	static class Entries {
 		
 		@XmlElement(name="entry")
-		List<Entry> value = new ArrayList<Entry>();
+		List<Entry> value;
 	}
 	
 	static class Entry {
