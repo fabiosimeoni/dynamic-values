@@ -146,7 +146,6 @@ public class Dynamic {
 	 * directives.
 	 * 
 	 * @param o the object
-	 * @param the copy directives
 	 * @return the dynamic value
 	 * @throws Exception if the value copy of the object cannot be returned
 	 */
@@ -161,7 +160,7 @@ public class Dynamic {
 	 * directives.
 	 * 
 	 * @param o the object
-	 * @param the copy directives
+	 * @param directives the copy directives
 	 * @return the dynamic value
 	 * @throws Exception if the value copy of the object cannot be returned
 	 */

@@ -11,10 +11,10 @@ import java.lang.reflect.Field;
 public abstract class Exclusion {
 
 	/**
-	 * Returns <code>true</code> if a given field inside a given object should be excluded from the value copy.
+	 * Returns <code>true</code> to exclude a given field of a given object from the value copy of the object.
 	 * @param object the object
 	 * @param field the field
-	 * @return  <code>true</code> if a given field inside a given object should be excluded from the value copy
+	 * @return  <code>true</code> to exclude a given field of a given object from the value copy of the object
 	 * @throws Exception if the exclusion cannot be applied
 	 */
 	abstract boolean exclude(Object object,Field field) throws Exception;

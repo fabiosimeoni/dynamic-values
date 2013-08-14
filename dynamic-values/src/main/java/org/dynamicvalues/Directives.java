@@ -40,7 +40,7 @@ public class Directives {
 	
 	/**
 	 * Adds a set of {@link Exclusion}s to these directives.
-	 * @param excludes the exclude directives
+	 * @param directives the exclude directives
 	 * @return these directives
 	 */
 	public Directives excluding(List<Exclusion> directives) {
@@ -81,7 +81,7 @@ public class Directives {
 	
 	
 	/**
-	 * Return the directives that excludes all fields that do <em>not</em> satisfy a given directive.
+	 * Returns the directive that excludes all fields that do <em>not</em> satisfy a given directive.
 	 * 
 	 * @param directive the directive
 	 * @return the directive
@@ -97,7 +97,7 @@ public class Directives {
 	}
 
 	/**
-	 * Return the directives that excludes all fields that satisfy simultaneously two or more directives.
+	 * Returns the directive that excludes all fields that satisfy simultaneously two or more other exclusions.
 	 * 
 	 * @param directives the directives
 	 * @return the directive
@@ -117,7 +117,7 @@ public class Directives {
 	}
 
 	/**
-	 * Return the directives that excludes all fields that have a given annotation.
+	 * Returns the directive that excludes all fields that have a given annotation.
 	 * 
 	 * @param annotation the given expression
 	 * @return the directive
@@ -133,7 +133,7 @@ public class Directives {
 	}
 
 	/**
-	 * Return the directives that excludes all fields that have a given type (in the sense of {@link Class#isAssignableFrom(Class)}).
+	 * Returns the directive that excludes all fields that have a given type (in the sense of {@link Class#isAssignableFrom(Class)}).
 	 * 
 	 * @param type the given type
 	 * @return the directive
@@ -149,9 +149,9 @@ public class Directives {
 	}
 
 	/**
-	 * Return the directives that excludes all fields within a given object.
+	 * Returns the directive that excludes all fields within a given object.
 	 * 
-	 * @param type the given type
+	 * @param o the given object
 	 * @return the directive
 	 */
 	public static Exclusion object(final Object o) {
@@ -165,7 +165,7 @@ public class Directives {
 	}
 
 	/**
-	 * Return the directives that excludes all fields with a given value.
+	 * Returns the directive that excludes all fields with a given value.
 	 * 
 	 * @param value the given value
 	 * @return the directive
@@ -183,7 +183,7 @@ public class Directives {
 	}
 
 	/**
-	 * Return the directives that excludes all fields of an object equivalent to a given object.
+	 * Returns the directive that excludes all fields of an object equivalent to a given object.
 	 * 
 	 * @param parent the given object
 	 * @return the directive
@@ -199,7 +199,7 @@ public class Directives {
 	}
 
 	/**
-	 * Return the directives that excludes all fields with a value which is equivalent to a given value (in the sense
+	 * Returns the directive that excludes all fields with a value which is equivalent to a given value (in the sense
 	 * of {@link Object#equals(Object)}).
 	 * 
 	 * @param value the given value
@@ -218,7 +218,7 @@ public class Directives {
 	}
 
 	/**
-	 * Return the directives that excludes all fields that have a given name.
+	 * Returns the directive that excludes all fields that have a given name.
 	 * 
 	 * @param name the name
 	 * @return the directive
@@ -234,7 +234,7 @@ public class Directives {
 	}
 
 	/**
-	 * Return the directives that excludes all fields that match a given regular expression.
+	 * Returns the directive that excludes all fields that match a given regular expression.
 	 * 
 	 * @param pattern the regular expression
 	 * @return the directive
@@ -252,7 +252,7 @@ public class Directives {
 	//mappings
 	
 	/**
-	 * Return the directives that map alls fields of a given type onto strings.
+	 * Returns the directive that map alls fields of a given type onto strings (in the sense of {@link Class#isAssignableFrom(Class)} and {@link Object#toString()}).
 	 * @param type the given type
 	 * @return the directive
 	 */
@@ -264,11 +264,5 @@ public class Directives {
 				return value.getClass().isAssignableFrom(type)?value.toString():null;
 			}
 		};
-	}
-	
-	@Override
-	public String toString() {
-		// TODO Auto-generated method stub
-		return super.toString();
 	}
 }
