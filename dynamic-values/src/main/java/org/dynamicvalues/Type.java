@@ -1,6 +1,7 @@
 package org.dynamicvalues;
 
 import static java.lang.System.*;
+import static java.lang.reflect.Modifier.*;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
@@ -286,14 +287,16 @@ enum Type {
 
 		if (superclass != null)
 			fields.addAll(valueFieldsOf(o, superclass, directives));
-
+		
 		field: for (Field field : clazz.getDeclaredFields())
-			for (ExcludeDirective directive : directives)
-				if (!directive.exclude(o, field)) {
-					fields.add(field);
-					continue field;
-				}
-
+					if (!isStatic(field.getModifiers())) {
+						for (ExcludeDirective directive : directives)
+							if (directive.exclude(o, field))
+								continue field;
+						fields.add(field);
+					}
+						
+			
 		return fields;
 	}
 }

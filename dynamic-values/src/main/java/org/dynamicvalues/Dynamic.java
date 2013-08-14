@@ -1,8 +1,11 @@
 package org.dynamicvalues;
 
+import static java.util.Arrays.*;
 import static org.dynamicvalues.Excludes.*;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.xml.bind.JAXBContext;
@@ -104,21 +107,7 @@ import javax.xml.bind.JAXBContext;
  */
 public class Dynamic {
 
-	private static ExcludeDirective[] defaultDirectives = { annotation(Exclude.class) };
-
-	/**
-	 * Returns the value copy of an object in a form which is suitable for JAXB serialisation, based on default copy
-	 * directives.
-	 * 
-	 * @param o the object
-	 * @return the dynamic value
-	 * @throws Exception if the value copy of the object cannot be returned
-	 */
-	public static Object externalValueOf(Object o) throws Exception {
-
-		return externalValueOf(o, defaultDirectives);
-
-	}
+	private static List<ExcludeDirective> defaultDirectives = asList(annotation(Exclude.class));
 
 	/**
 	 * Returns the value copy of an object in a form which is suitable for JAXB serialisation, based on given copy
@@ -139,20 +128,7 @@ public class Dynamic {
 	static Object externalValueOf(Object o, Map<Integer, Object> state, ExcludeDirective... directives)
 			throws Exception {
 
-		return Type.of(o).toExternal(o, state, directives);
-
-	}
-
-	/**
-	 * Returns the value copy of an object based on default copy directives.
-	 * 
-	 * @param o the object
-	 * @return the dynamic value
-	 * @throws Exception if the value copy of the object cannot be returned
-	 */
-	public static <T> T valueOf(Object o) throws Exception {
-
-		return valueOf(o, defaultDirectives);
+		return Type.of(o).toExternal(o, state, mergeDefaultsWith(directives));
 
 	}
 
@@ -167,7 +143,7 @@ public class Dynamic {
 	public static <T> T valueOf(Object o, ExcludeDirective... directives) throws Exception {
 
 		@SuppressWarnings("all")
-		T t = (T) valueOf(o, new HashMap<Integer, Object>(), directives);
+		T t = (T) valueOf(o, new HashMap<Integer, Object>(), mergeDefaultsWith(directives));
 		return t;
 
 	}
@@ -177,6 +153,14 @@ public class Dynamic {
 
 		return Type.of(o).toDynamic(o, state, directives);
 
+	}
+	
+	//helper
+	private static ExcludeDirective[] mergeDefaultsWith(ExcludeDirective ...custom) {
+		
+		List<ExcludeDirective> directives = new ArrayList<ExcludeDirective>(defaultDirectives);
+		directives.addAll(asList(custom));
+		return directives.toArray(new ExcludeDirective[0]);
 	}
 
 }
