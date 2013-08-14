@@ -252,6 +252,9 @@ enum Type {
 				
 				Object fieldValue = field.get(o);
 				
+				if (fieldValue==null)
+					continue;
+				
 				//adapted value?
 				for (Mapping mapping : directives.mappings()) {
 					Object adapted = mapping.map(o,field,fieldValue);
