@@ -20,7 +20,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * @author Fabio Simeoni
  *
  */
-class Externals {
+public class Externals {
 
 	@XmlRootElement(name="map")
 	public static class ValueMap {
@@ -31,7 +31,7 @@ class Externals {
 		
 		@XmlJavaTypeAdapter(MapAdapter.class)
 		@XmlElement(name="entries")
-		Map<Object,Object> elements;
+		public Map<Object,Object> elements;
 		
 		public ValueMap(Map<Object,Object> elements) {
 			this.elements=elements;
@@ -55,7 +55,7 @@ class Externals {
 		
 		@XmlElementWrapper(name="list")
 		@XmlElement(name="element")
-		List<Object> elements;
+		public List<Object> elements;
 		
 		@SuppressWarnings("all")
 		public ValueList(List<Object> elements) {

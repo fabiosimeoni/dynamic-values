@@ -26,7 +26,7 @@ enum Type {
 	valuemap {
 
 		@Override
-		Object toDynamic(Object o, Map<Integer, Object> state, ExcludeDirective... directives) throws Exception {
+		Object toDynamic(Object o, Map<Integer, Object> state, Directives directives) throws Exception {
 
 			Object value = state.get(identityHashCode(o));
 			if (value != null)
@@ -46,7 +46,7 @@ enum Type {
 	valuelist {
 
 		@Override
-		Object toDynamic(Object o, Map<Integer, Object> state, ExcludeDirective... directives) throws Exception {
+		Object toDynamic(Object o, Map<Integer, Object> state, Directives directives) throws Exception {
 
 			Object value = state.get(identityHashCode(o));
 			
@@ -69,7 +69,7 @@ enum Type {
 	atomic,
 
 	collection {
-		Object toExternal(Object o, Map<Integer, Object> state, ExcludeDirective... directives) throws Exception {
+		Object toExternal(Object o, Map<Integer, Object> state, Directives directives) throws Exception {
 
 			Object value = state.get(identityHashCode(o));
 			if (value != null)
@@ -88,7 +88,7 @@ enum Type {
 		}
 
 		@Override
-		Object toDynamic(Object o, Map<Integer, Object> state, ExcludeDirective... directives) throws Exception {
+		Object toDynamic(Object o, Map<Integer, Object> state,  Directives directives) throws Exception {
 
 			Object value = state.get(identityHashCode(o));
 			
@@ -107,7 +107,7 @@ enum Type {
 	},
 
 	array {
-		Object toExternal(Object o, Map<Integer, Object> state, ExcludeDirective... directives) throws Exception {
+		Object toExternal(Object o, Map<Integer, Object> state, Directives directives) throws Exception {
 
 			Object value = state.get(identityHashCode(o));
 			if (value != null)
@@ -126,7 +126,7 @@ enum Type {
 		}
 
 		@Override
-		Object toDynamic(Object o, Map<Integer, Object> state, ExcludeDirective... directives) throws Exception {
+		Object toDynamic(Object o, Map<Integer, Object> state,  Directives directives) throws Exception {
 
 			Object value = state.get(identityHashCode(o));
 
@@ -146,7 +146,7 @@ enum Type {
 
 	map {
 		@Override
-		Object toExternal(Object o, Map<Integer, Object> state, ExcludeDirective... directives) throws Exception {
+		Object toExternal(Object o, Map<Integer, Object> state,  Directives directives) throws Exception {
 
 			Object value = state.get(identityHashCode(o));
 
@@ -167,7 +167,7 @@ enum Type {
 		}
 
 		@Override
-		Object toDynamic(Object o, Map<Integer, Object> state, ExcludeDirective... directives) throws Exception {
+		Object toDynamic(Object o, Map<Integer, Object> state,  Directives directives) throws Exception {
 
 			Object value = state.get(identityHashCode(o));
 
@@ -187,30 +187,32 @@ enum Type {
 	},
 
 	object {
-		Object toExternal(Object o, Map<Integer, Object> state, ExcludeDirective... directives) throws Exception {
+		
+		Object toExternal(Object o, Map<Integer, Object> state,  Directives directives) throws Exception {
 
 			Object value = state.get(System.identityHashCode(o));
+			
 			if (value != null)
 				return value;
 
 			Map<Object, Object> map = new HashMap<Object, Object>();
 
 			value = new ValueMap(map);
+			
 			state.put(System.identityHashCode(o), value);
 
-			Class<?> clazz = o.getClass();
-			List<Field> fields = valueFieldsOf(o, clazz, directives);
-			for (Field field : fields) {
-				field.setAccessible(true);
-				Object val = Dynamic.externalValueOf(field.get(o), state, directives);
-				if (val != null)
-					map.put(field.getName(), val);
+			for (Map.Entry<String,Object> field : gatherFields(o, state, directives).entrySet()) {
+				
+				Object fieldValue = Dynamic.externalValueOf(field.getValue(), state, directives);
+				
+				if (fieldValue != null)
+					map.put(field.getKey(), fieldValue);
 			}
 
 			return value;
 		}
 
-		Object toDynamic(Object o, Map<Integer, Object> state, ExcludeDirective... directives) throws Exception {
+		Object toDynamic(Object o, Map<Integer, Object> state, Directives directives) throws Exception {
 
 			// have/are we already produced/producing a value for this?
 			Object value = state.get(identityHashCode(o));
@@ -224,30 +226,83 @@ enum Type {
 
 			// and store it _before_ next recursive invocation
 			state.put(System.identityHashCode(o), map);
-
-			Class<?> clazz = o.getClass();
-
-			List<Field> fields = valueFieldsOf(o, clazz, directives);
-			for (Field field : fields) {
-				field.setAccessible(true);
-				Object val = Dynamic.valueOf(field.get(o), state, directives);
-				if (val != null)
-					map.put(field.getName(), val);
+			
+			for (Map.Entry<String,Object> field : gatherFields(o, state, directives).entrySet()) {
+				
+				Object fieldValue = Dynamic.valueOf(field.getValue(), state, directives);
+				if (fieldValue != null)
+					map.put(field.getKey(), fieldValue);
 			}
 
 			return map;
 		}
+		
+		//helper
+		
+		private Map<String,Object> gatherFields(Object o, Map<Integer, Object> state, Directives directives) throws Exception {
+			
+			Map<String,Object> values = new LinkedHashMap<String,Object>();
+			
+			Class<?> clazz = o.getClass();
+			
+			List<Field> fields = valueFieldsOf(o, clazz, directives);
+			for (Field field : fields) {
+				
+				field.setAccessible(true);
+				
+				Object fieldValue = field.get(o);
+				
+				//adapted value?
+				for (Mapping mapping : directives.mappings()) {
+					Object adapted = mapping.map(o,field,fieldValue);
+					if (adapted!=null) {
+						fieldValue=adapted;
+						break;
+					}
+				}
+			
+				values.put(field.getName(),fieldValue);
+			}
+			
+			return values;
+		}
+		
+		private List<Field> valueFieldsOf(Object o, Class<?> clazz, Directives directives) throws Exception {
+
+			List<Field> fields = new ArrayList<Field>();
+
+			Class<?> superclass = clazz.getSuperclass();
+
+			if (superclass != null)
+				fields.addAll(valueFieldsOf(o, superclass, directives));
+			
+			field: for (Field field : clazz.getDeclaredFields())
+					
+					if (!isStatic(field.getModifiers())) {
+							
+							for (Exclusion directive : directives.excludes())
+								if (directive.exclude(o, field))
+									continue field;
+							
+							fields.add(field);
+						}
+							
+				
+			return fields;
+		}
 	};
 
-	Object toExternal(Object o, Map<Integer, Object> state, ExcludeDirective... directives) throws Exception {
+	Object toExternal(Object o, Map<Integer, Object> state, Directives directives) throws Exception {
 
 		return o; // by default, the object is in external form
 	}
 
 	// from static to dynamic
-	Object toDynamic(Object o, Map<Integer, Object> state, ExcludeDirective... directives) throws Exception {
+	Object toDynamic(Object o, Map<Integer, Object> state, Directives directives) throws Exception {
 		return o; // by default, the object is a value
 	}
+	
+	
 
 	@SuppressWarnings("all")
 	private static final List<Class<?>> atomics = Arrays.asList(String.class, Boolean.class, Character.class,
@@ -279,24 +334,4 @@ enum Type {
 		return object;
 	}
 
-	private static List<Field> valueFieldsOf(Object o, Class<?> clazz, ExcludeDirective... directives) throws Exception {
-
-		List<Field> fields = new ArrayList<Field>();
-
-		Class<?> superclass = clazz.getSuperclass();
-
-		if (superclass != null)
-			fields.addAll(valueFieldsOf(o, superclass, directives));
-		
-		field: for (Field field : clazz.getDeclaredFields())
-					if (!isStatic(field.getModifiers())) {
-						for (ExcludeDirective directive : directives)
-							if (directive.exclude(o, field))
-								continue field;
-						fields.add(field);
-					}
-						
-			
-		return fields;
-	}
 }

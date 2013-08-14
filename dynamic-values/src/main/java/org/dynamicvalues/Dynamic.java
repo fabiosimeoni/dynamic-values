@@ -1,11 +1,8 @@
 package org.dynamicvalues;
 
-import static java.util.Arrays.*;
-import static org.dynamicvalues.Excludes.*;
+import static org.dynamicvalues.Directives.*;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import javax.xml.bind.JAXBContext;
@@ -67,14 +64,10 @@ import javax.xml.bind.JAXBContext;
  * <b>Assignments and Casts</b>
  * <p>
  * 
- * {@link #valueOf(Object)} can be applied to any object, including lists, maps, wrapper types (hence primitive values,
- * through auto-boxing). The returned copy will have the same type as the input, except for instances of user-defined
- * types, which will be dynamic maps.
- * 
- * <p>
- * 
- * The method signature returns a generic object, and the client is responsible for casting to the appropriate type if
- * needed for further processing. However, a cast is performed implicitly on assignment, e.g.:
+ * {@link #valueOf(Object)} and {@link #externalValueOf(Object)} can be applied to any object, including lists, maps,
+ * wrapper types (hence primitive values, through auto-boxing). For this reason, the method signature returns a generic
+ * object, and the client is responsible for casting to the appropriate type if needed for further processing. However,
+ * a cast is performed implicitly on assignment, e.g.:
  * 
  * <pre>
  * MyObject o = ...
@@ -82,16 +75,24 @@ import javax.xml.bind.JAXBContext;
  * ...process value...
  * </pre>
  * 
- * This facility is not available for external value copies, which are intended for immediate JAXB serialisation.
  * 
  * <p>
- * <b>Exclude Directives</b>
+ * <b>Copy Directives</b>
  * <p>
  * 
- * This factory can follow {@link ExcludeDirective}s to produce value copies and external value copies of user-defined
- * instances. By default, instance fields marked with the {@link Exclude} annotations are excluded from copies. Other
- * exclusions can be conveniently produced by the {@link Excludes} factory (e.g. based on other annotation types, field
- * types, field names or values, etc).
+ * This factory can follow {@link Exclusion} and {@link Mapping} directives to produce value copies and external value
+ * copies. By default, instance fields marked with the {@link Exclude} annotations are excluded from copies. Other
+ * directives can be conveniently produced by the {@link Directives} factory> As a simple example:
+ * 
+ * <pre>
+ * 
+ * import static ....Directives.*;
+ * 
+ * MyObject o = ...
+ * Map<String,Object> value = Dynamic.valueOf(o,by().excluding(type(MyType.class),annotation(MyAnnotation.class)))
+ * 				   .mapping(asString(QName.class));
+ * 
+ * </pre>
  * 
  * <p>
  * <b>Cycles and Sharing</b>
@@ -107,28 +108,20 @@ import javax.xml.bind.JAXBContext;
  */
 public class Dynamic {
 
-	private static List<ExcludeDirective> defaultDirectives = asList(annotation(Exclude.class));
+	private static Exclusion[] defaultExcludes = new Exclusion[] { annotation(Exclude.class) };
+	private static Mapping[] defaultMappings = new Mapping[] {};
+	private static Directives defaults = by().excluding(defaultExcludes).mapping(defaultMappings);
 
 	/**
-	 * Returns the value copy of an object in a form which is suitable for JAXB serialisation, based on given copy
-	 * directives.
+	 * Returns the value copy of an object based on default copy directives.
 	 * 
 	 * @param o the object
-	 * @param the copy directives
 	 * @return the dynamic value
 	 * @throws Exception if the value copy of the object cannot be returned
 	 */
-	public static Object externalValueOf(Object o, ExcludeDirective... directives) throws Exception {
+	public static <T> T valueOf(Object o) throws Exception {
 
-		return externalValueOf(o, new HashMap<Integer, Object>(), directives);
-
-	}
-
-	// used internally to support recursion
-	static Object externalValueOf(Object o, Map<Integer, Object> state, ExcludeDirective... directives)
-			throws Exception {
-
-		return Type.of(o).toExternal(o, state, mergeDefaultsWith(directives));
+		return valueOf(o, by());
 
 	}
 
@@ -140,27 +133,64 @@ public class Dynamic {
 	 * @return the dynamic value
 	 * @throws Exception if the value copy of the object cannot be returned
 	 */
-	public static <T> T valueOf(Object o, ExcludeDirective... directives) throws Exception {
+	public static <T> T valueOf(Object o, Directives directives) throws Exception {
 
 		@SuppressWarnings("all")
-		T t = (T) valueOf(o, new HashMap<Integer, Object>(), mergeDefaultsWith(directives));
+		T t = (T) valueOf(o, new HashMap<Integer, Object>(), addDefaults(directives));
+		return t;
+
+	}
+
+	/**
+	 * Returns the value copy of an object in a form which is suitable for JAXB serialisation, based on default copy
+	 * directives.
+	 * 
+	 * @param o the object
+	 * @param the copy directives
+	 * @return the dynamic value
+	 * @throws Exception if the value copy of the object cannot be returned
+	 */
+	public static <T> T externalValueOf(Object o) throws Exception {
+
+		return externalValueOf(o, by());
+
+	}
+
+	/**
+	 * Returns the value copy of an object in a form which is suitable for JAXB serialisation, based on given copy
+	 * directives.
+	 * 
+	 * @param o the object
+	 * @param the copy directives
+	 * @return the dynamic value
+	 * @throws Exception if the value copy of the object cannot be returned
+	 */
+	public static <T> T externalValueOf(Object o, Directives directives) throws Exception {
+
+		@SuppressWarnings("all")
+		T t = (T) externalValueOf(o, new HashMap<Integer, Object>(), directives);
 		return t;
 
 	}
 
 	// used internally to support recursiones
-	static Object valueOf(Object o, Map<Integer, Object> state, ExcludeDirective... directives) throws Exception {
+	static Object valueOf(Object o, Map<Integer, Object> state, Directives directives) throws Exception {
 
 		return Type.of(o).toDynamic(o, state, directives);
 
 	}
-	
-	//helper
-	private static ExcludeDirective[] mergeDefaultsWith(ExcludeDirective ...custom) {
-		
-		List<ExcludeDirective> directives = new ArrayList<ExcludeDirective>(defaultDirectives);
-		directives.addAll(asList(custom));
-		return directives.toArray(new ExcludeDirective[0]);
+
+	// used internally to support recursion
+	static Object externalValueOf(Object o, Map<Integer, Object> state, Directives directives) throws Exception {
+
+		return Type.of(o).toExternal(o, state, addDefaults(directives));
+
+	}
+
+	// helper
+	private static Directives addDefaults(Directives directives) {
+
+		return directives.excluding(defaults.excludes()).mapping(defaults.mappings());
 	}
 
 }

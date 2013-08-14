@@ -8,7 +8,7 @@ import java.lang.reflect.Field;
  * @author Fabio Simeoni
  *
  */
-public abstract class ExcludeDirective {
+public abstract class Exclusion {
 
 	/**
 	 * Returns <code>true</code> if a given field inside a given object should be excluded from the value copy.
