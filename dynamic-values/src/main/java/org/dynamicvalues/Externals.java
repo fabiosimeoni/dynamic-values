@@ -3,6 +3,7 @@ package org.dynamicvalues;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -27,7 +28,7 @@ class Externals {
 		
 		@XmlJavaTypeAdapter(MapAdapter.class)
 		@XmlElement(name="entries")
-		Map<Object,Object> elements;
+		Map<Object,Object> elements = new LinkedHashMap<Object, Object>();
 		
 		public ValueMap(Map<Object,Object> elements) {
 			this.elements=elements;
@@ -77,7 +78,7 @@ class Externals {
 	static class Entries {
 		
 		@XmlElement(name="entry")
-		List<Entry> value;
+		List<Entry> value = new ArrayList<Entry>();
 	}
 	
 	static class Entry {

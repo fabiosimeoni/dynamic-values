@@ -4,6 +4,8 @@ import static org.acme.TestModel.*;
 import static org.dynamicvalues.Dynamic.*;
 import static org.junit.Assert.*;
 
+import java.util.Map;
+
 import org.acme.TestModel.Obj;
 import org.junit.Test;
 
@@ -54,6 +56,42 @@ public class DynamicTest {
 		Obj o = new Obj();
 		System.out.println(valueOf(o));
 		xmlRoundTripOf(o);
+	}
+	
+	@Test
+	@SuppressWarnings("all")
+	public void sharing() throws Exception {
+		
+		class A {
+			Object o1 = new Object();
+			Object o2 = o1;
+		}
+		
+		
+		A a = new A();
+
+		Map<?,?> map = valueOf(a);
+		
+		assertSame(map.get("o1"),map.get("o2"));
+		
+		xmlRoundTripOf(a);
+	}
+	
+	@Test
+	@SuppressWarnings("all")
+	public void cycle() throws Exception {
+		
+		class A {
+			A a = this;
+		}
+		
+		
+		A a = new A();
+
+		Map<?,?> map = valueOf(a);
+		
+		assertSame(map,map.get("a"));
+		
 	}
 
 	

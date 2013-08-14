@@ -91,6 +91,7 @@ public class TestModel {
 		StringWriter writer = new StringWriter();
 		Marshaller m =ctx.createMarshaller();
 		m.setProperty( Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE );
+		
 		m.marshal(externalValueOf(o), writer);
 
 		System.out.println(writer.toString());
