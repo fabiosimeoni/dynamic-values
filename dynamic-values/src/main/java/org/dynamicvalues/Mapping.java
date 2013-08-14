@@ -8,7 +8,7 @@ import java.lang.reflect.Field;
  * @author Fabio Simeoni
  * 
  */
-public abstract class Mapping {
+public interface Mapping {
 
 	/**
 	 * Returns the value that should be copied for a given field of a given object in place of the current field value.
@@ -21,5 +21,5 @@ public abstract class Mapping {
 	 * @return the value that should be copied for a given field of a given object, or <code>null</code> if the original field value is to be copied instead
 	 * @throws Exception if the mapping cannot be applied
 	 */
-	abstract Object map(Object object, Field field, Object fieldValue) throws Exception;
+	Object map(Object object, Field field, Object fieldValue) throws Exception;
 }

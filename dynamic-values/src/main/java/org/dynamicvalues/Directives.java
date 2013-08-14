@@ -90,7 +90,7 @@ public class Directives {
 		return new Exclusion() {
 
 			@Override
-			boolean exclude(Object object, Field field) throws Exception {
+			public boolean exclude(Object object, Field field) throws Exception {
 				return !directive.exclude(object, field);
 			}
 		};
@@ -106,7 +106,7 @@ public class Directives {
 		return new Exclusion() {
 
 			@Override
-			boolean exclude(Object object, Field field) throws Exception {
+			public boolean exclude(Object object, Field field) throws Exception {
 				for (Exclusion directive : directives)
 					if (!directive.exclude(object, field))
 						return false;
@@ -126,7 +126,7 @@ public class Directives {
 		return new Exclusion() {
 
 			@Override
-			boolean exclude(Object object, Field field) {
+			public boolean exclude(Object object, Field field) {
 				return field.isAnnotationPresent(annotation);
 			}
 		};
@@ -142,7 +142,7 @@ public class Directives {
 		return new Exclusion() {
 
 			@Override
-			boolean exclude(Object object, Field field) {
+			public boolean exclude(Object object, Field field) {
 				return type.isAssignableFrom(field.getType());
 			}
 		};
@@ -158,7 +158,7 @@ public class Directives {
 		return new Exclusion() {
 
 			@Override
-			boolean exclude(Object object, Field field) {
+			public boolean exclude(Object object, Field field) {
 				return object == o;
 			}
 		};
@@ -174,7 +174,7 @@ public class Directives {
 		return new Exclusion() {
 
 			@Override
-			boolean exclude(Object object, Field field) throws Exception {
+			public boolean exclude(Object object, Field field) throws Exception {
 				field.setAccessible(true);
 				Object val = field.get(object);
 				return val != null && val == value;
@@ -192,7 +192,7 @@ public class Directives {
 		return new Exclusion() {
 
 			@Override
-			boolean exclude(Object object, Field field) {
+			public boolean exclude(Object object, Field field) {
 				return object.equals(parent);
 			}
 		};
@@ -209,7 +209,7 @@ public class Directives {
 		return new Exclusion() {
 
 			@Override
-			boolean exclude(Object object, Field field) throws Exception {
+			public boolean exclude(Object object, Field field) throws Exception {
 				field.setAccessible(true);
 				Object val = field.get(object);
 				return val != null && val.equals(value);
@@ -227,7 +227,7 @@ public class Directives {
 		return new Exclusion() {
 
 			@Override
-			boolean exclude(Object object, Field field) throws Exception {
+			public boolean exclude(Object object, Field field) throws Exception {
 				return field.getName().equals(name);
 			}
 		};
@@ -243,7 +243,7 @@ public class Directives {
 		return new Exclusion() {
 
 			@Override
-			boolean exclude(Object object, Field field) throws Exception {
+			public boolean exclude(Object object, Field field) throws Exception {
 				return pattern.matcher(field.getName()).matches();
 			}
 		};
@@ -260,7 +260,7 @@ public class Directives {
 		return new Mapping() {
 			
 			@Override
-			Object map(Object parent, Field field, Object value) throws Exception {
+			public Object map(Object parent, Field field, Object value) throws Exception {
 				return value.getClass().isAssignableFrom(type)?value.toString():null;
 			}
 		};
