@@ -42,6 +42,32 @@ public class Externals {
 		public String toString() {
 			return elements.toString();
 		}
+
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result + ((elements == null) ? 0 : elements.hashCode());
+			return result;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			ValueMap other = (ValueMap) obj;
+			if (elements == null) {
+				if (other.elements != null)
+					return false;
+			} else if (!elements.equals(other.elements))
+				return false;
+			return true;
+		}
+		
 		
 		
 	}
@@ -70,6 +96,31 @@ public class Externals {
 		@Override
 		public Iterator<Object> iterator() {
 			return elements.iterator();
+		}
+
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result + ((elements == null) ? 0 : elements.hashCode());
+			return result;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			ValueList other = (ValueList) obj;
+			if (elements == null) {
+				if (other.elements != null)
+					return false;
+			} else if (!elements.equals(other.elements))
+				return false;
+			return true;
 		}
 		
 		
