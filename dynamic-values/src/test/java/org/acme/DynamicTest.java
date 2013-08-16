@@ -1,12 +1,12 @@
 package org.acme;
 
-import static org.acme.TestModel.*;
+import static org.acme.Fixture.*;
 import static org.dynamicvalues.Dynamic.*;
 import static org.junit.Assert.*;
 
 import java.util.Map;
 
-import org.acme.TestModel.Obj;
+import org.acme.Fixture.Obj;
 import org.junit.Test;
 
 public class DynamicTest {

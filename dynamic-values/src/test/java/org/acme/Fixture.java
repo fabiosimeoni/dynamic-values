@@ -15,7 +15,7 @@ import javax.xml.bind.Marshaller;
 
 import org.dynamicvalues.Exclude;
 
-public class TestModel {
+public class Fixture {
 
 	static int[] array = new int[] { 1, 2, 3 };
 	static int[][] arrayOfArrays = new int[][] { array, array };
