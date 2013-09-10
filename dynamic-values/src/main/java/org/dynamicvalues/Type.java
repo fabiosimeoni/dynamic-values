@@ -244,7 +244,6 @@ enum Type {
 				try {
 					Object fieldValue = Dynamic.valueOf(field.getValue(), state, directives);
 				
-					System.out.println(field.getValue().getClass());
 					if (fieldValue != null)
 						map.put(field.getKey(), fieldValue);
 				}
@@ -268,7 +267,6 @@ enum Type {
 			while (it.hasNext())
 				if (empty(it.next()))
 					it.remove();
-			
 			
 			return map;
 			
