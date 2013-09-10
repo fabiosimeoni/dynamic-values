@@ -132,10 +132,10 @@ public class DirectiveTest {
 		};
 		
 
-		Map<?,?> value = valueOf(obj,by().mapping(asString(QName.class)));
+		Map<?,?> value = valueOf(obj,by().mapping(objectsToStringFor(QName.class)));
 		assertEquals(value.get("a1"),"test");
 		
-		ValueMap external = externalValueOf(obj,by().mapping(asString(QName.class)));
+		ValueMap external = externalValueOf(obj,by().mapping(objectsToStringFor(QName.class)));
 		assertEquals(external.elements.get("a1"),"test");
 	}
 	

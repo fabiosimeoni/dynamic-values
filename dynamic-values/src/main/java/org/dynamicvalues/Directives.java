@@ -248,7 +248,30 @@ public class Directives {
 			}
 		};
 	}
+	
+	
+	/**
+	 * Returns the directive that excludes all String fields with an empty value.
+	 * 
+	 * @return the directive
+	 */
+	public static Exclusion emptyStrings() {
+		return new Exclusion() {
 
+			@Override
+			public boolean exclude(Object object, Field field) throws Exception {
+				
+				if (field.getType()==String.class) {
+					String val = String.class.cast(field.get(object));
+					if (val!=null && val.isEmpty())
+						return true;
+				}
+				
+				return false;
+			}
+		};
+	}
+	
 	//mappings
 	
 	/**
@@ -256,12 +279,28 @@ public class Directives {
 	 * @param type the given type
 	 * @return the directive
 	 */
-	public static Mapping asString(final Class<?> type) {
+	public static Mapping objectsToStringFor(final Class<?> type) {
 		return new Mapping() {
 			
 			@Override
 			public Object map(Object parent, Field field, Object value) throws Exception {
 				return value.getClass().isAssignableFrom(type)?value.toString():null;
+			}
+		};
+	}
+	
+	
+	/**
+	 * Returns the directive that map all {@link Class} fields onto their simple names
+	 * 
+	 * @return the directive
+	 */
+	public static Mapping classesOntoSimpleNames() {
+		return new Mapping() {
+			
+			@Override
+			public Object map(Object parent, Field field, Object value) throws Exception {
+				return (value instanceof Class)?Class.class.cast(value).getSimpleName():null;
 			}
 		};
 	}

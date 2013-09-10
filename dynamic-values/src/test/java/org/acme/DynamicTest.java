@@ -4,11 +4,14 @@ import static org.acme.Fixture.*;
 import static org.dynamicvalues.Dynamic.*;
 import static org.junit.Assert.*;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import org.acme.Fixture.Obj;
 import org.junit.Test;
 
+
+@SuppressWarnings("all")
 public class DynamicTest {
 
 	@Test
@@ -59,7 +62,6 @@ public class DynamicTest {
 	}
 	
 	@Test
-	@SuppressWarnings("all")
 	public void sharing() throws Exception {
 		
 		class A {
@@ -78,11 +80,15 @@ public class DynamicTest {
 	}
 	
 	@Test
-	@SuppressWarnings("all")
 	public void cycle() throws Exception {
 		
 		class A {
 			A a = this;
+			int v=10;
+		}
+		
+		class B {
+			
 		}
 		
 		
@@ -90,10 +96,46 @@ public class DynamicTest {
 
 		Map<?,?> map = valueOf(a);
 		
+		System.out.println(map);
+		
 		assertSame(map,map.get("a"));
 		
 	}
 
 	
-
+	@Test
+	public void innerClasses() throws Exception {
+		
+		Object o = new Object() {
+			int a=10;	
+			Object inner = new Object() {};
+		};
+		
+		Map<?,?> map = valueOf(o);
+		
+		assertTrue(map.size()==1);
+		
+		
+		
+	}
+	
+	@Test
+	public void emptyFields() throws Exception {
+		
+		Object o = new Object() {
+			int a=10;
+			String[] bs = new String[0];
+			Object inner = new Object(){
+				Map<String,String> map = new HashMap<String, String>();
+			};
+			
+		};
+		
+		Map<?,?> map = valueOf(o);
+		
+		assertFalse(map.containsKey("bs"));
+		assertFalse(map.containsKey("inner"));
+		
+		
+	}
 }

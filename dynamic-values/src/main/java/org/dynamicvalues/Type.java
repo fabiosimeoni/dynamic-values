@@ -7,7 +7,9 @@ import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -197,19 +199,25 @@ enum Type {
 
 			Map<Object, Object> map = new HashMap<Object, Object>();
 
-			value = new ValueMap(map);
+			ValueMap vmap = new ValueMap(map);
 			
-			state.put(System.identityHashCode(o), value);
+			state.put(System.identityHashCode(o), vmap);
 
 			for (Map.Entry<String,Object> field : gatherFields(o, state, directives).entrySet()) {
 				
+				//skip reference to owner object, if any
+				if (field.getKey().startsWith("this$"))
+					continue;
+				
 				Object fieldValue = Dynamic.externalValueOf(field.getValue(), state, directives);
 				
-				if (fieldValue != null)
+				if (fieldValue != null && !empty(fieldValue))
 					map.put(field.getKey(), fieldValue);
 			}
-
-			return value;
+			
+			vmap.elements = withoutEmpties(vmap.elements);
+			
+			return vmap;
 		}
 
 		Object toDynamic(Object o, Map<Integer, Object> state, Directives directives) throws Exception {
@@ -229,15 +237,55 @@ enum Type {
 			
 			for (Map.Entry<String,Object> field : gatherFields(o, state, directives).entrySet()) {
 				
-				Object fieldValue = Dynamic.valueOf(field.getValue(), state, directives);
-				if (fieldValue != null)
-					map.put(field.getKey(), fieldValue);
+				//skip reference to owner object, if any
+				if (field.getKey().startsWith("this$"))
+					continue;
+				
+				try {
+					Object fieldValue = Dynamic.valueOf(field.getValue(), state, directives);
+				
+					System.out.println(field.getValue().getClass());
+					if (fieldValue != null)
+						map.put(field.getKey(), fieldValue);
+				}
+				catch(Exception e) {
+					throw new Exception("cannot turn field "+field.getKey()+" with value "+field.getValue()+" into a dynamic value",e);
+				}
 			}
 
+			return withoutEmpties(map);
+		}
+
+		
+		
+		//helpers
+		
+		private Map<Object,Object> withoutEmpties(Map<Object,Object> map) {
+			//eliminate empty fields, but only as a final pass when we've closed potential cycles
+			//(or we may think it's empty just because we've not finished processing the remaining field after
+			//closing this cycle
+			Iterator<Object> it = map.values().iterator();
+			while (it.hasNext())
+				if (empty(it.next()))
+					it.remove();
+			
+			
 			return map;
+			
 		}
 		
-		//helper
+		private boolean empty(Object object) {
+			
+			System.out.println(object.getClass());
+			if (object instanceof Map)
+				return Map.class.cast(object).isEmpty();
+				
+			if (object instanceof Collection)
+				return Collection.class.cast(object).isEmpty();
+			
+			return false;
+				
+		}
 		
 		private Map<String,Object> gatherFields(Object o, Map<Integer, Object> state, Directives directives) throws Exception {
 			
@@ -247,8 +295,6 @@ enum Type {
 			
 			List<Field> fields = valueFieldsOf(o, clazz, directives);
 			for (Field field : fields) {
-				
-				field.setAccessible(true);
 				
 				Object fieldValue = field.get(o);
 				
@@ -283,6 +329,8 @@ enum Type {
 					
 					if (!isStatic(field.getModifiers())) {
 							
+							field.setAccessible(true);
+						
 							for (Exclusion directive : directives.excludes())
 								if (directive.exclude(o, field))
 									continue field;
